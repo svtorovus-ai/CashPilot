@@ -1,0 +1,78 @@
+[
+    {
+        "merged": "ua.cashpilot.app-debug-36:/drawable_widget_reset_button.xml.flat",
+        "source": "ua.cashpilot.app-main-38:/drawable/widget_reset_button.xml"
+    },
+    {
+        "merged": "ua.cashpilot.app-debug-36:/drawable_ic_refresh.xml.flat",
+        "source": "ua.cashpilot.app-main-38:/drawable/ic_refresh.xml"
+    },
+    {
+        "merged": "ua.cashpilot.app-debug-36:/drawable_settings_bg.xml.flat",
+        "source": "ua.cashpilot.app-main-38:/drawable/settings_bg.xml"
+    },
+    {
+        "merged": "ua.cashpilot.app-debug-36:/drawable_ic_chevron_left.xml.flat",
+        "source": "ua.cashpilot.app-main-38:/drawable/ic_chevron_left.xml"
+    },
+    {
+        "merged": "ua.cashpilot.app-debug-36:/drawable_ic_launcher.xml.flat",
+        "source": "ua.cashpilot.app-main-38:/drawable/ic_launcher.xml"
+    },
+    {
+        "merged": "ua.cashpilot.app-debug-36:/drawable_widget_nav_button.xml.flat",
+        "source": "ua.cashpilot.app-main-38:/drawable/widget_nav_button.xml"
+    },
+    {
+        "merged": "ua.cashpilot.app-debug-36:/drawable_widget_main_bg.xml.flat",
+        "source": "ua.cashpilot.app-main-38:/drawable/widget_main_bg.xml"
+    },
+    {
+        "merged": "ua.cashpilot.app-debug-36:/layout_widget_cashpilot.xml.flat",
+        "source": "ua.cashpilot.app-main-38:/layout/widget_cashpilot.xml"
+    },
+    {
+        "merged": "ua.cashpilot.app-debug-36:/drawable_widget_day_vacation.xml.flat",
+        "source": "ua.cashpilot.app-main-38:/drawable/widget_day_vacation.xml"
+    },
+    {
+        "merged": "ua.cashpilot.app-debug-36:/xml_cashpilot_widget_info.xml.flat",
+        "source": "ua.cashpilot.app-main-38:/xml/cashpilot_widget_info.xml"
+    },
+    {
+        "merged": "ua.cashpilot.app-debug-36:/drawable_widget_day_work.xml.flat",
+        "source": "ua.cashpilot.app-main-38:/drawable/widget_day_work.xml"
+    },
+    {
+        "merged": "ua.cashpilot.app-debug-36:/drawable_widget_day_bg.xml.flat",
+        "source": "ua.cashpilot.app-main-38:/drawable/widget_day_bg.xml"
+    },
+    {
+        "merged": "ua.cashpilot.app-debug-36:/drawable_widget_day_duty.xml.flat",
+        "source": "ua.cashpilot.app-main-38:/drawable/widget_day_duty.xml"
+    },
+    {
+        "merged": "ua.cashpilot.app-debug-36:/drawable-nodpi_ic_launcher_png.png.flat",
+        "source": "ua.cashpilot.app-main-38:/drawable-nodpi/ic_launcher_png.png"
+    },
+    {
+        "merged": "ua.cashpilot.app-debug-36:/drawable_ic_chevron_right.xml.flat",
+        "source": "ua.cashpilot.app-main-38:/drawable/ic_chevron_right.xml"
+    },
+    {
+        "merged": "ua.cashpilot.app-debug-36:/drawable_ic_sliders.xml.flat",
+        "source": "ua.cashpilot.app-main-38:/drawable/ic_sliders.xml"
+    },
+    {
+        "merged": "ua.cashpilot.app-debug-36:/drawable_settings_field_bg.xml.flat",
+        "source": "ua.cashpilot.app-main-38:/drawable/settings_field_bg.xml"
+    },
+    {
+        "merged": "ua.cashpilot.app-debug-36:/drawable_widget_day_idle.xml.flat",
+        "source": "ua.cashpilot.app-main-38:/drawable/widget_day_idle.xml"
+    },
+    {
+        "merged": "ua.cashpilot.app-debug-36:/drawable_settings_button_bg.xml.flat",
+        "source": "ua.cashpilot.app-main-38:/drawable/settings_button_bg.xml"
+    }
+]

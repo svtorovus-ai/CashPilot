@@ -1,0 +1,10 @@
+<resources>
+    <color name="ink">#F4F7FB</color>
+    <color name="surface">#1F222B</color>
+    <color name="muted">#8B97A5</color>
+    <color name="work">#0E3F2F</color>
+    <color name="duty">#4B3D17</color>
+    <color name="vacation">#163152</color>
+    <color name="idle">#121820</color>
+    <color name="accent">#B8D7FF</color>
+</resources>
