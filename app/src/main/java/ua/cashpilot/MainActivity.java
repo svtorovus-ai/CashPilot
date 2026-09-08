@@ -311,7 +311,7 @@ public class MainActivity extends Activity {
                 if (day < 1 || day > daysInMonth) continue;
                 int row = slot / 7, col = slot % 7;
                 float l = pad + col * cellW + d(2), t = y + row * rowH + d(2), rr = pad + (col + 1) * cellW - d(2), b = y + (row + 1) * rowH - d(2);
-                String state = data == null ? "idle" : local.optString(selected + String.format(Locale.US, "-%02d", day), data.get(day));
+                String state = local.optString(selected + String.format(Locale.US, "-%02d", day), (data != null && data.containsKey(day)) ? data.get(day) : "idle");
                 drawDay(canvas, l, t, rr, b, state, day);
             }
             canvas.restore();
@@ -332,16 +332,16 @@ public class MainActivity extends Activity {
         }
 
         private void drawStats(Canvas c, float x, float baseline, int work, int duty, int vacation, int idle, float size) {
-            String workText = "Працював " + (raw == null ? "—" : work);
-            String dutyText = "Чергував " + (raw == null ? "—" : duty);
+            String workText = "Працював " + work;
+            String dutyText = "Чергував " + duty;
             drawPart(c, workText, x, baseline, size, 0xFF4DDB82); x += paint.measureText(workText);
             drawPart(c, "  ·  ", x, baseline, size, 0xFFB7C3D0); x += paint.measureText("  ·  ");
             drawPart(c, dutyText, x, baseline, size, 0xFFFFC928);
         }
 
         private void drawStatsSecond(Canvas c, float x, float baseline, int vacation, int idle, float size) {
-            String vacationText = "Відпустка " + (raw == null ? "—" : vacation);
-            String idleText = "Без даних " + (raw == null ? "—" : idle);
+            String vacationText = "Відпустка " + vacation;
+            String idleText = "Без даних " + idle;
             drawPart(c, vacationText, x, baseline, size, 0xFF3AA9FF); x += paint.measureText(vacationText);
             drawPart(c, "  ·  ", x, baseline, size, 0xFFB7C3D0); x += paint.measureText("  ·  ");
             drawPart(c, idleText, x, baseline, size, 0xFF9AA8B8);
