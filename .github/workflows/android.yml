@@ -31,6 +31,13 @@ jobs:
         name: app-debug
         path: app/build/outputs/apk/debug/app-debug.apk
 
+    - name: Delete old 'latest' tag
+      run: |
+        git config --global user.email "action@github.com"
+        git config --global user.name "GitHub Action"
+        git tag -d latest || true
+        git push origin :refs/tags/latest || true
+
     - name: Create Release
       uses: softprops/action-gh-release@v2
       if: github.ref == 'refs/heads/main'
@@ -39,3 +46,4 @@ jobs:
         name: Latest Build
         files: app/build/outputs/apk/debug/app-debug.apk
         token: ${{ secrets.GITHUB_TOKEN }}
+        make_latest: true
