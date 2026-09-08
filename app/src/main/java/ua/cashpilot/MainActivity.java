@@ -177,10 +177,10 @@ public class MainActivity extends Activity {
     private void toggleDay(int day) {
         String selected = month();
         Map<Integer, String> statuses = statuses(selected);
-        if (statuses == null) return;
         String key = selected + String.format(Locale.US, "-%02d", day);
         JSONObject overrides = overrides(selected);
-        String current = overrides.optString(key, statuses.get(day));
+        String defaultStatus = (statuses != null && statuses.containsKey(day)) ? statuses.get(day) : "idle";
+        String current = overrides.optString(key, defaultStatus);
         String next = "work".equals(current) ? "duty" : "duty".equals(current) ? "vacation" : "vacation".equals(current) ? "idle" : "work";
         try { overrides.put(key, next); } catch (Exception ignored) { return; }
         prefs.edit().putString(CashPilotWidget.sharedOverrideKey(selected), overrides.toString()).putString("override_" + DATA_ID + "_" + selected, overrides.toString()).apply();
@@ -271,18 +271,16 @@ public class MainActivity extends Activity {
             Map<Integer, String> data = statusesFromRaw();
             JSONObject local = overrides(selected == null ? month() : selected);
             int work = 0, duty = 0, vacation = 0, idle = 0;
-            if (data != null) {
-                for (int day = 1; day <= daysInMonth; day++) {
-                    String key = selected + String.format(Locale.US, "-%02d", day);
-                    String state = local.optString(key, data.get(day));
-                    if ("work".equals(state)) work++; else if ("duty".equals(state)) duty++; else if ("vacation".equals(state)) vacation++; else idle++;
-                }
+            for (int day = 1; day <= daysInMonth; day++) {
+                String key = selected + String.format(Locale.US, "-%02d", day);
+                String state = local.optString(key, (data != null && data.containsKey(day)) ? data.get(day) : "idle");
+                if ("work".equals(state)) work++; else if ("duty".equals(state)) duty++; else if ("vacation".equals(state)) vacation++; else idle++;
             }
             boolean compact = width < d(500);
             if (compact) {
                 type(10, 0xFF93A4B6, false); paint.setTextAlign(Paint.Align.LEFT); canvas.drawText("Премія", pad, y, paint);
                 type(22, 0xFFB8E7FF, true); paint.setTextAlign(Paint.Align.RIGHT);
-                canvas.drawText(data == null ? "— грн" : money(work, duty, vacation, idle, daysInMonth), right, y, paint);
+                canvas.drawText(money(work, duty, vacation, idle, daysInMonth), right, y, paint);
                 y += d(31);
                 drawStats(canvas, pad, y, work, duty, vacation, idle, 12);
                 drawStatsSecond(canvas, pad, y + d(18), vacation, idle, 12);
@@ -292,7 +290,7 @@ public class MainActivity extends Activity {
                 drawStats(canvas, pad, y, work, duty, vacation, idle, 14);
                 drawStatsSecond(canvas, pad, y + d(20), vacation, idle, 14);
                 type(25, 0xFFB8E7FF, true); paint.setTextAlign(Paint.Align.RIGHT);
-                canvas.drawText(data == null ? "— грн" : money(work, duty, vacation, idle, daysInMonth), right, y + d(11), paint);
+                canvas.drawText(money(work, duty, vacation, idle, daysInMonth), right, y + d(11), paint);
                 y += d(32);
                 y = drawComparison(canvas, pad, y, selected, work, duty, vacation, idle, daysInMonth);
             }
