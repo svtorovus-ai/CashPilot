@@ -73,7 +73,6 @@ public class MainActivity extends Activity {
         dashboard.setLoading(selected);
         String cached = prefs.getString(CashPilotWidget.sharedCacheKey(selected), prefs.getString("cache_" + DATA_ID + "_" + selected, null));
         dashboard.setData(selected, cached, cached != null, "Оновлення…");
-        if (hasManualOverrides(selected)) return;
         executor.submit(() -> {
             String raw = null;
             boolean cachedResult = false;

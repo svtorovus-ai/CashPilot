@@ -58,7 +58,7 @@ public class CashPilotWidget extends AppWidgetProvider {
             AppWidgetManager.getInstance(c).updateAppWidget(id, initialV);
         } catch (Exception ignored) {}
 
-        if (!force || hasOverrides(c, id, month)) return;
+        if (!force) return;
 
         new Thread(() -> {
             try {
