@@ -17,7 +17,7 @@ public class SettingsActivity extends Activity {
         root=new LinearLayout(this); root.setOrientation(LinearLayout.VERTICAL); root.setPadding(dp(20),dp(24),dp(20),dp(32)); root.setBackgroundResource(R.drawable.settings_bg);
         TextView title=new TextView(this); title.setText("CashPilot"); title.setTextColor(Color.parseColor("#B8D7FF")); title.setTypeface(null, android.graphics.Typeface.BOLD); title.setTextSize(32); root.addView(title);
         TextView hint=new TextView(this); hint.setText("Підключення до telemetry-сервера. Віджет лише читає сервер; зміни статусів зберігаються локально."); hint.setTextColor(Color.parseColor("#8B97A5")); hint.setPadding(0,16,0,32); hint.setTextSize(14); root.addView(hint);
-        url=field("URL сервера", "http://204.168.225.114:8787"); token=field("Токен telemetry", ""); install=field("Ідентифікатор користувача/install_id", "");
+        url=field("URL сервера", "https://your-server.com"); token=field("Токен telemetry", ""); install=field("Ідентифікатор користувача/install_id", "");
         EditText statsUrl = field("URL статистики сервера (необов'язково)", "Якщо порожньо — відкриється URL telemetry-сервера");
         TextView ratesTitle = new TextView(this); ratesTitle.setText("Ставки додаткової винагороди, грн"); ratesTitle.setTextColor(Color.parseColor("#B8D7FF")); ratesTitle.setTypeface(null, android.graphics.Typeface.BOLD); ratesTitle.setPadding(4, 28, 0, 8); ratesTitle.setTextSize(14); root.addView(ratesTitle);
         EditText workRate = field("Працював", "100000");
@@ -34,7 +34,7 @@ public class SettingsActivity extends Activity {
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(-1, -2); lp.setMargins(0, 64, 0, 0); save.setLayoutParams(lp); root.addView(save);
         TextView note=new TextView(this); note.setText("Після збереження додай віджет CashPilot на головний екран."); note.setTextColor(Color.parseColor("#8B97A5")); note.setPadding(0,24,0,0); note.setTextSize(12); note.setGravity(Gravity.CENTER); root.addView(note);
         ScrollView scroll = new ScrollView(this); scroll.setFillViewport(true); scroll.addView(root); setContentView(scroll);
-        android.content.SharedPreferences p=getSharedPreferences(CashPilotWidget.PREFS,0); url.setText(p.getString("url","http://204.168.225.114:8787"));token.setText(p.getString("token",""));install.setText(p.getString("install",""));statsUrl.setText(p.getString("stats_url",""));
+        android.content.SharedPreferences p=getSharedPreferences(CashPilotWidget.PREFS,0); url.setText(p.getString("url",""));token.setText(p.getString("token",""));install.setText(p.getString("install",""));statsUrl.setText(p.getString("stats_url",""));
         workRate.setText(String.valueOf(p.contains("rate_work") ? p.getInt("rate_work", 100000) : p.getInt("rate_work_k", 100) * 1000)); dutyRate.setText(String.valueOf(p.contains("rate_duty") ? p.getInt("rate_duty", 30000) : p.getInt("rate_duty_k", 30) * 1000));
         boolean dailyMode = p.getBoolean("rate_mode_daily", false); daily.setChecked(dailyMode); monthly.setChecked(!dailyMode);
         military.setOnClickListener(v -> { workRate.setText("100000"); dutyRate.setText("30000"); });

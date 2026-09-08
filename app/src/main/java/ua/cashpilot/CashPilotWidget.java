@@ -63,7 +63,7 @@ public class CashPilotWidget extends AppWidgetProvider {
         new Thread(() -> {
             try {
                 SharedPreferences p = c.getSharedPreferences(PREFS, 0);
-                String baseUrl = p.getString("url", "http://204.168.225.114:8787");
+                String baseUrl = p.getString("url", "");
                 String raw = fetch(baseUrl, p.getString("token", ""), p.getString("install", ""), month);
                 boolean cached = false;
                 if (isValidPayload(raw)) {

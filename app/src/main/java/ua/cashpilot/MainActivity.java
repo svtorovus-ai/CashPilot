@@ -79,7 +79,7 @@ public class MainActivity extends Activity {
             boolean cachedResult = false;
             String message = "Сервер недоступний";
             try {
-                raw = CashPilotWidget.fetch(prefs.getString("url", "http://204.168.225.114:8787"),
+                raw = CashPilotWidget.fetch(prefs.getString("url", ""),
                         prefs.getString("token", ""), prefs.getString("install", ""), selected);
                 if (!validPayload(raw, selected)) throw new IllegalStateException("Некоректна відповідь сервера");
                 prefs.edit().putString("cache_" + DATA_ID + "_" + selected, raw).apply();
@@ -88,7 +88,7 @@ public class MainActivity extends Activity {
                 String previousCache = prefs.getString("cache_" + DATA_ID + "_" + previous, null);
                 if (!validPayload(previousCache, previous)) {
                     try {
-                        String previousRaw = CashPilotWidget.fetch(prefs.getString("url", "http://204.168.225.114:8787"),
+                        String previousRaw = CashPilotWidget.fetch(prefs.getString("url", ""),
                                 prefs.getString("token", ""), prefs.getString("install", ""), previous);
                         if (validPayload(previousRaw, previous)) prefs.edit().putString("cache_" + DATA_ID + "_" + previous, previousRaw).putString(CashPilotWidget.sharedCacheKey(previous), previousRaw).apply();
                     } catch (Exception ignored) { }
