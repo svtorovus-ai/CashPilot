@@ -31,7 +31,6 @@ final class UpdateManager {
     private static final String MANIFEST_URL =
             "https://github.com/svtorovus-ai/CashPilot/releases/latest/download/update.json";
     private static final String PREF_LAST_CHECK = "update_last_check_ms";
-    private static final String PREF_LAST_PROMPT = "update_last_prompt_code";
     private static final long CHECK_INTERVAL_MS = 6L * 60L * 60L * 1000L;
 
     private UpdateManager() {}
@@ -59,9 +58,6 @@ final class UpdateManager {
                     if (interactive) Toast.makeText(activity, "Оновлень немає", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                int prompted = prefs.getInt(PREF_LAST_PROMPT, 0);
-                if (!interactive && prompted >= result.versionCode) return;
-                prefs.edit().putInt(PREF_LAST_PROMPT, result.versionCode).apply();
                 showUpdateDialog(activity, result);
             });
         }, "CashPilot-update-check").start();
@@ -106,7 +102,7 @@ final class UpdateManager {
     private static void showUpdateDialog(Activity activity, UpdateInfo info) {
         new android.app.AlertDialog.Builder(activity)
                 .setTitle("Доступне оновлення CashPilot")
-                .setMessage("Нова версія " + info.versionName + ". Завантажити та встановити її зараз?")
+                .setMessage("Нова версія " + info.versionName + " знайдена автоматично. Завантажити та встановити її зараз?")
                 .setNegativeButton("Пізніше", null)
                 .setPositiveButton("Оновити", (dialog, which) -> downloadAndInstall(activity, info))
                 .show();

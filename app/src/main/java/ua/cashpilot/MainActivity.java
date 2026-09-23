@@ -188,6 +188,12 @@ public class MainActivity extends Activity {
         SpannableStringBuilder out = new SpannableStringBuilder();
         appendInfo(out, "CASHPILOT— інформація\n\n", 0xFFB8D7FF, true);
         appendInfo(out, "CashPilot - локальний калькулятор + віджет для перегляду статистики. Та прогнозування нарахування \"Премії\" (Додаткової винагороди) Календар показує статуси днів зі статистики telemetry-сервера, або внесені вручну дані. Дані з сервера лише читаються, а ручні зміни статусів зберігаються локально на цьому пристрої.\n\n", 0xFFE8EEF5, false);
+        appendInfo(out, "КНОПКИ КЕРУВАННЯ\n\n", 0xFFB8D7FF, true);
+        appendInfo(out, "⚙ Налаштування — відкриває URL telemetry-сервера, token, install_id, URL веб-статистики та ставки. Тут також можна зберегти параметри, повернути ставки «ЗСУ 100000 / 30000», відкрити статистику сервера й перевірити оновлення CashPilot.\n\n", 0xFFE8EEF5, false);
+        appendInfo(out, "‹ Попередній місяць — показує статистику та календар попереднього місяця.\n\n", 0xFFE8EEF5, false);
+        appendInfo(out, "› Наступний місяць — показує статистику та календар наступного місяця. Місяці також можна гортати свайпом вліво або вправо.\n\n", 0xFFE8EEF5, false);
+        appendInfo(out, "↻ Оновити статистику — прибирає локальні ручні статуси вибраного місяця та заново завантажує повну статистику з telemetry-сервера. Це повне скидання місяця, а не просто оновлення екрана.\n\n", 0xFFE8EEF5, false);
+        appendInfo(out, "ⓘ Інформація — відкриває цей довідник із поясненням статусів, розрахунку, синхронізації та кнопок.\n\n", 0xFFE8EEF5, false);
         appendInfo(out, "СТАТУСИ\n\n", 0xFFB8D7FF, true);
         appendInfo(out, "Зелений - Працював. (Повний 100к)\n\n", 0xFF4DDB82, true);
         appendInfo(out, "Жовтий — Чергував. (сектор 30к)\n\n", 0xFFFFC928, true);
@@ -484,7 +490,13 @@ public class MainActivity extends Activity {
             if (icon == 0) { for (int i = -1; i <= 1; i++) { c.drawLine(cx + d(i * 10), y + d(10), cx + d(i * 10), y + d(32), paint); c.drawCircle(cx + d(i * 10), y + d(i == 0 ? 18 : 25), d(3), paint); } }
             else if (icon == 1) { path.reset(); path.moveTo(x + d(25), y + d(11)); path.lineTo(x + d(14), cy); path.lineTo(x + d(25), y + d(31)); c.drawPath(path, paint); }
             else if (icon == 2) { path.reset(); path.moveTo(x + d(17), y + d(11)); path.lineTo(x + d(28), cy); path.lineTo(x + d(17), y + d(31)); c.drawPath(path, paint); }
-            else if (icon == 3) { c.drawArc(x + d(10), y + d(10), x + d(32), y + d(32), -55, 275, false, paint); path.reset(); path.moveTo(x + d(28), y + d(9)); path.lineTo(x + d(32), y + d(10)); path.lineTo(x + d(31), y + d(15)); c.drawPath(path, paint); }
+            else if (icon == 3) {
+                float left = x + d(10), top = y + d(10), right = x + d(34), bottom = y + d(34);
+                c.drawArc(left, top, right, bottom, -48, 158, false, paint);
+                path.reset(); path.moveTo(x + d(29), y + d(9)); path.lineTo(x + d(35), y + d(11)); path.lineTo(x + d(31), y + d(16)); c.drawPath(path, paint);
+                c.drawArc(left, top, right, bottom, 132, 158, false, paint);
+                path.reset(); path.moveTo(x + d(15), y + d(35)); path.lineTo(x + d(9), y + d(33)); path.lineTo(x + d(13), y + d(28)); c.drawPath(path, paint);
+            }
             else { c.drawCircle(cx, cy, d(12), paint); c.drawCircle(cx, cy - d(5), d(1.8f), paint); c.drawLine(cx, cy, cx, cy + d(8), paint); }
             paint.setStrokeCap(Paint.Cap.BUTT); paint.setStyle(Paint.Style.FILL);
         }
