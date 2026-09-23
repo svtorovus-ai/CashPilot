@@ -11,6 +11,8 @@ import android.content.SharedPreferences;
 import android.graphics.*;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ScrollView;
@@ -39,8 +41,17 @@ public class MainActivity extends Activity {
     private SharedPreferences prefs;
     private DashboardView dashboard;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final Handler refreshHandler = new Handler(Looper.getMainLooper());
     private boolean firstResume = true;
+    private boolean resumed;
     private long loadGeneration;
+    private final Runnable autoRefresh = new Runnable() {
+        @Override public void run() {
+            if (!resumed) return;
+            refreshMonthInBackground();
+            refreshHandler.postDelayed(this, 10000L);
+        }
+    };
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -53,11 +64,21 @@ public class MainActivity extends Activity {
 
     @Override protected void onResume() {
         super.onResume();
+        resumed = true;
         if (firstResume || dashboard != null) loadMonth(month());
         firstResume = false;
+        refreshHandler.removeCallbacks(autoRefresh);
+        refreshHandler.postDelayed(autoRefresh, 10000L);
+    }
+
+    @Override protected void onPause() {
+        resumed = false;
+        refreshHandler.removeCallbacks(autoRefresh);
+        super.onPause();
     }
 
     @Override protected void onDestroy() {
+        refreshHandler.removeCallbacks(autoRefresh);
         executor.shutdownNow();
         super.onDestroy();
     }
@@ -104,6 +125,27 @@ public class MainActivity extends Activity {
             runOnUiThread(() -> {
                 if (generation == loadGeneration && selected.equals(month())) dashboard.setData(selected, result, fromCache, label);
             });
+        });
+    }
+
+    private void refreshMonthInBackground() {
+        final String selected = month();
+        if (hasManualOverrides(selected)) return;
+        final long generation = loadGeneration;
+        executor.submit(() -> {
+            try {
+                String raw = CashPilotWidget.fetch(prefs.getString("url", ""),
+                        prefs.getString("token", ""), prefs.getString("install", ""), selected);
+                if (!validPayload(raw, selected)) return;
+                prefs.edit().putString("cache_" + DATA_ID + "_" + selected, raw)
+                        .putString(CashPilotWidget.sharedCacheKey(selected), raw).apply();
+                runOnUiThread(() -> {
+                    if (resumed && generation == loadGeneration && selected.equals(month())
+                            && !hasManualOverrides(selected)) {
+                        dashboard.setData(selected, raw, false, "Сервер");
+                    }
+                });
+            } catch (Exception ignored) { }
         });
     }
 

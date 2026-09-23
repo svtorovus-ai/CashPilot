@@ -15,16 +15,29 @@ import java.util.*;
 public class CashPilotWidget extends AppWidgetProvider {
     static final String PREV = "ua.cashpilot.PREV_MONTH", NEXT = "ua.cashpilot.NEXT_MONTH";
     static final String RESET = "ua.cashpilot.RESET", TOGGLE = "ua.cashpilot.TOGGLE_DAY";
-    static final String NO_OP = "ua.cashpilot.NO_OP", PREFS = "cashpilot";
+    static final String NO_OP = "ua.cashpilot.NO_OP", AUTO_REFRESH = "ua.cashpilot.AUTO_REFRESH", PREFS = "cashpilot";
+    private static final int AUTO_REFRESH_REQUEST = 7401;
+    private static final long AUTO_REFRESH_INTERVAL_MS = 5 * 60 * 1000L;
     static final String[] MONTHS = {"Січень","Лютий","Березень","Квітень","Травень","Червень","Липень","Серпень","Вересень","Жовтень","Листопад","Грудень"};
 
     @Override public void onUpdate(Context c, AppWidgetManager m, int[] ids) {
+        scheduleAutoRefresh(c);
         for (int id : ids) refresh(c, id, true);
     }
+    @Override public void onEnabled(Context c) { scheduleAutoRefresh(c); }
+    @Override public void onDisabled(Context c) { cancelAutoRefresh(c); }
     @Override public void onReceive(Context c, Intent i) {
         super.onReceive(c, i);
         String action = i.getAction();
         if (NO_OP.equals(action)) return;
+        if (AUTO_REFRESH.equals(action) || Intent.ACTION_BOOT_COMPLETED.equals(action)) {
+            scheduleAutoRefresh(c);
+            AppWidgetManager manager = AppWidgetManager.getInstance(c);
+            for (int widgetId : manager.getAppWidgetIds(new ComponentName(c, CashPilotWidget.class))) {
+                autoRefresh(c, widgetId);
+            }
+            return;
+        }
         int id = i.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
         if (id == AppWidgetManager.INVALID_APPWIDGET_ID) return;
 
@@ -46,19 +59,48 @@ public class CashPilotWidget extends AppWidgetProvider {
         }
     }
 
+    private static void scheduleAutoRefresh(Context c) {
+        AlarmManager alarms = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
+        if (alarms == null) return;
+        Intent intent = new Intent(c, CashPilotWidget.class).setAction(AUTO_REFRESH);
+        PendingIntent operation = PendingIntent.getBroadcast(c, AUTO_REFRESH_REQUEST, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        alarms.setInexactRepeating(AlarmManager.RTC, System.currentTimeMillis() + 60_000L,
+                AUTO_REFRESH_INTERVAL_MS, operation);
+    }
+
+    private static void cancelAutoRefresh(Context c) {
+        AlarmManager alarms = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
+        if (alarms == null) return;
+        Intent intent = new Intent(c, CashPilotWidget.class).setAction(AUTO_REFRESH);
+        PendingIntent operation = PendingIntent.getBroadcast(c, AUTO_REFRESH_REQUEST, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        alarms.cancel(operation);
+    }
+
+    private static void autoRefresh(Context c, int id) {
+        String month = monthFor(c, id);
+        if (hasOverrides(c, id, month)) {
+            refresh(c, id, false);
+        } else {
+            refresh(c, id, true);
+        }
+    }
+
     static void refresh(Context c, int id, boolean force) {
         SharedPreferences prefs = c.getSharedPreferences(PREFS, 0);
         String month = monthFor(c, id);
         long requestId = System.nanoTime();
         prefs.edit().putLong("request_" + id, requestId).apply();
 
+        boolean canFetch = force && !hasOverrides(c, id, month);
         try {
             String cachedRaw = prefs.getString(sharedCacheKey(month), prefs.getString("cache_" + id + "_" + month, null));
-            RemoteViews initialV = render(c, id, month, cachedRaw, cachedRaw != null, force);
+            RemoteViews initialV = render(c, id, month, cachedRaw, cachedRaw != null, canFetch);
             AppWidgetManager.getInstance(c).updateAppWidget(id, initialV);
         } catch (Exception ignored) {}
 
-        if (!force) return;
+        if (!canFetch) return;
 
         new Thread(() -> {
             try {
@@ -91,14 +133,16 @@ public class CashPilotWidget extends AppWidgetProvider {
     }
 
     static String fetch(String base, String token, String install, String month) {
+        String normalizedToken = token == null ? "" : token.replaceAll("\\s+", "");
         String normalizedInstall = normalizeInstall(install);
-        if (base.trim().isEmpty() || token.trim().isEmpty() || normalizedInstall.isEmpty()) return null;
+        if (base.trim().isEmpty() || normalizedToken.isEmpty() || normalizedInstall.isEmpty()) return null;
         try {
-            String q = "/user-stats-data?install_id=" + enc(normalizedInstall) + "&month=" + enc(month);
-            HttpURLConnection x = (HttpURLConnection) new URL(base.replaceAll("/$", "") + q).openConnection();
+            String normalizedBase = normalizeBaseUrl(base);
+            String q = "/user-stats-data?token=" + enc(normalizedToken) + "&install_id=" + enc(normalizedInstall) + "&month=" + enc(month);
+            HttpURLConnection x = (HttpURLConnection) new URL(normalizedBase + q).openConnection();
             x.setConnectTimeout(10000); x.setReadTimeout(15000); x.setRequestMethod("GET");
             x.setRequestProperty("Accept", "application/json");
-            x.setRequestProperty("X-PITUSHNYA-TOKEN", token);
+            x.setRequestProperty("X-PITUSHNYA-TOKEN", normalizedToken);
             x.setDoInput(true);
             if (x.getResponseCode() != 200) return null;
             BufferedReader r = new BufferedReader(new InputStreamReader(x.getInputStream(), "UTF-8"));
@@ -106,6 +150,20 @@ public class CashPilotWidget extends AppWidgetProvider {
             while ((line = r.readLine()) != null) s.append(line); r.close();
             return s.toString();
         } catch (Exception e) { return null; }
+    }
+
+    static String normalizeBaseUrl(String value) {
+        String raw = value == null ? "" : value.trim();
+        if (raw.isEmpty()) return "";
+        try {
+            URI uri = new URI(raw);
+            if (uri.getScheme() == null || uri.getHost() == null) return raw.replaceAll("/$", "");
+            return uri.getScheme() + "://" + uri.getRawAuthority();
+        } catch (Exception e) {
+            int path = raw.indexOf("/user-stats");
+            if (path > 0) raw = raw.substring(0, path);
+            return raw.replaceAll("/$", "");
+        }
     }
 
     static String normalizeInstall(String value) {
