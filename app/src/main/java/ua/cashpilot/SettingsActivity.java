@@ -5,6 +5,10 @@ import android.appwidget.*;
 import android.content.*;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
 import android.view.*;
 import android.widget.*;
 import android.net.Uri;
@@ -48,7 +52,64 @@ public class SettingsActivity extends Activity {
         Button serverStats = new Button(this); serverStats.setText("Відкрити статистику сервера"); serverStats.setTextColor(Color.WHITE); serverStats.setBackgroundResource(R.drawable.settings_button_bg);
         LinearLayout.LayoutParams statsLp = new LinearLayout.LayoutParams(-1, -2); statsLp.setMargins(0, 16, 0, 0); root.addView(serverStats, statsLp);
         serverStats.setOnClickListener(v -> { String address = statsUrl.getText().toString().trim(); if (address.isEmpty()) address = url.getText().toString().trim(); if (address.isEmpty()) { Toast.makeText(this, "Вкажи URL сервера", Toast.LENGTH_SHORT).show(); return; } try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(address))); } catch (Exception e) { Toast.makeText(this, "Не вдалося відкрити URL", Toast.LENGTH_SHORT).show(); } });
+
+        TextView infoTitle = new TextView(this);
+        infoTitle.setText("Як працює CashPilot");
+        infoTitle.setTextColor(Color.parseColor("#B8D7FF"));
+        infoTitle.setTypeface(null, android.graphics.Typeface.BOLD);
+        infoTitle.setTextSize(19);
+        infoTitle.setPadding(dp(4), dp(32), dp(4), dp(8));
+        root.addView(infoTitle);
+
+        TextView info = new TextView(this);
+        info.setText(functionInfo());
+        info.setTextSize(14);
+        info.setLineSpacing(0, 1.12f);
+        info.setPadding(dp(4), 0, dp(4), dp(24));
+        root.addView(info);
     }
+
+    private CharSequence functionInfo() {
+        SpannableStringBuilder out = new SpannableStringBuilder();
+        appendInfo(out, "ПРИЗНАЧЕННЯ\n", 0xFFB8D7FF, true);
+        appendInfo(out, "CashPilot — локальний калькулятор премії та віджет для головного екрана. Він показує календар, статуси днів, статистику й прогнозовану суму додаткової винагороди.\n\n", 0xFFE8EEF5, false);
+
+        appendInfo(out, "ПІДКЛЮЧЕННЯ\n", 0xFFB8D7FF, true);
+        appendInfo(out, "URL сервера — адреса telemetry-сервера. Токен telemetry — ключ доступу до статистики. install_id — ідентифікатор користувача або встановлення. URL статистики сервера — окрема сторінка статистики; якщо поле порожнє, відкривається URL telemetry-сервера. Після зміни параметрів натисни «Зберегти».\n\n", 0xFFE8EEF5, false);
+
+        appendInfo(out, "СИНХРОНІЗАЦІЯ З ПІТУШНЯ MCC\n", 0xFFB8D7FF, true);
+        appendInfo(out, "Якщо ти користуєшся додатком «PITUSHNYA MCC», робочі дні та чергування автоматично надходять на telemetry-сервер. CashPilot регулярно читає JSON-відповідь для відкритого місяця, перевіряє її коректність і перераховує суму. Коли telemetry надсилає нову подію, змінюється тільки відповідний день, без скидання всього місяця. Дані CashPilot на сервер не записує.\n\n", 0xFFE8EEF5, false);
+
+        appendInfo(out, "ЛОКАЛЬНІ СТАТУСИ\n", 0xFFB8D7FF, true);
+        appendInfo(out, "Натискання на день у додатку або віджеті змінює його локальний статус. Локальні зміни синхронізуються між додатком і віджетом на цьому пристрої, але не відправляються на сервер. Автоматичне оновлення сервера не стирає такі зміни. Кнопка скидання прибирає локальні статуси вибраного місяця та повторно завантажує його з telemetry-сервера.\n\n", 0xFFE8EEF5, false);
+
+        appendInfo(out, "СТАТУСИ ДНІВ\n", 0xFFB8D7FF, true);
+        appendInfo(out, "Зелений — Працював, ставка «Працював».\n", 0xFF4DDB82, true);
+        appendInfo(out, "Жовтий — Чергував, ставка «Чергував».\n", 0xFFFFC928, true);
+        appendInfo(out, "Синій — Відпустка, 0 грн.\n", 0xFF3AA9FF, true);
+        appendInfo(out, "Чорний — Без даних. Жовтий і чорний рахуються однаково; колір потрібен лише для зручної візуальної відмітки.\n\n", 0xFF9AA8B8, true);
+
+        appendInfo(out, "РОЗРАХУНОК СУМИ\n", 0xFFB8D7FF, true);
+        appendInfo(out, "У режимі «За місяць» ставка за день розраховується як місячна ставка, поділена на кількість днів у місяці. У режимі «За день» введена сума нараховується за кожен відповідний день. Працював, Чергував і Без даних додають суму; Відпустка не нараховується. «ЗСУ 100000 / 30000» повертає стандартні ставки.\n\n", 0xFFE8EEF5, false);
+
+        appendInfo(out, "ВІДЖЕТ\n", 0xFFB8D7FF, true);
+        appendInfo(out, "Віджет показує той самий місяць, календар, статистику та суму. У ньому можна гортати місяці, оновлювати дані та змінювати статуси днів. Додаток і віджет використовують спільні локальні дані.\n\n", 0xFFE8EEF5, false);
+
+        appendInfo(out, "КЕШ І ДОСТУПНІСТЬ\n", 0xFFB8D7FF, true);
+        appendInfo(out, "Останні валідні дані кожного місяця зберігаються в локальному кеші. Якщо сервер тимчасово недоступний, CashPilot показує кеш і позначає джерело як локальний кеш.\n\n", 0xFFE8EEF5, false);
+
+        appendInfo(out, "ОНОВЛЕННЯ ДОДАТКУ\n", 0xFFB8D7FF, true);
+        appendInfo(out, "CashPilot автоматично перевіряє нові версії та має ручну кнопку «Перевірити оновлення CashPilot». Перед встановленням Android попросить підтвердження. Оновлення не повинно стирати налаштування, кеш або локальні статуси.\n", 0xFFE8EEF5, false);
+        return out;
+    }
+
+    private void appendInfo(SpannableStringBuilder out, String value, int color, boolean bold) {
+        int start = out.length();
+        out.append(value);
+        out.setSpan(new ForegroundColorSpan(color), start, out.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        if (bold) out.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), start, out.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+    }
+
     EditText field(String label,String value){
         TextView l=new TextView(this); l.setText(label); l.setTextColor(Color.parseColor("#8B97A5")); l.setPadding(4,16,0,8); l.setTextSize(13); l.setTypeface(null, android.graphics.Typeface.BOLD); root.addView(l);
         EditText e=new EditText(this); e.setHint(value); e.setSingleLine(true); e.setTextColor(Color.WHITE); e.setHintTextColor(Color.GRAY);
