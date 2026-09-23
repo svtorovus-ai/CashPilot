@@ -42,6 +42,9 @@ public class SettingsActivity extends Activity {
             int work = parseRate(workRate.getText().toString(), 100000), duty = parseRate(dutyRate.getText().toString(), 30000);
             p.edit().putString("url",url.getText().toString().trim()).putString("token",token.getText().toString().trim()).putString("install",install.getText().toString().trim()).putString("stats_url",statsUrl.getText().toString().trim()).putInt("rate_work", work).putInt("rate_duty", duty).putBoolean("rate_mode_daily", daily.isChecked()).apply(); updateWidgets(); Toast.makeText(this,"Збережено",Toast.LENGTH_SHORT).show();
         });
+        Button update = new Button(this); update.setText("Перевірити оновлення CashPilot"); update.setTextColor(Color.WHITE); update.setBackgroundResource(R.drawable.settings_button_bg);
+        LinearLayout.LayoutParams updateLp = new LinearLayout.LayoutParams(-1, -2); updateLp.setMargins(0, 16, 0, 0); root.addView(update, updateLp);
+        update.setOnClickListener(v -> UpdateManager.checkAndPrompt(this, true));
         Button serverStats = new Button(this); serverStats.setText("Відкрити статистику сервера"); serverStats.setTextColor(Color.WHITE); serverStats.setBackgroundResource(R.drawable.settings_button_bg);
         LinearLayout.LayoutParams statsLp = new LinearLayout.LayoutParams(-1, -2); statsLp.setMargins(0, 16, 0, 0); root.addView(serverStats, statsLp);
         serverStats.setOnClickListener(v -> { String address = statsUrl.getText().toString().trim(); if (address.isEmpty()) address = url.getText().toString().trim(); if (address.isEmpty()) { Toast.makeText(this, "Вкажи URL сервера", Toast.LENGTH_SHORT).show(); return; } try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(address))); } catch (Exception e) { Toast.makeText(this, "Не вдалося відкрити URL", Toast.LENGTH_SHORT).show(); } });

@@ -79,12 +79,9 @@ public class CashPilotWidget extends AppWidgetProvider {
     }
 
     private static void autoRefresh(Context c, int id) {
-        String month = monthFor(c, id);
-        if (hasOverrides(c, id, month)) {
-            refresh(c, id, false);
-        } else {
-            refresh(c, id, true);
-        }
+        // Fetch server changes even when local overrides exist. Rendering keeps
+        // local overrides on top, while untouched days receive fresh telemetry.
+        refresh(c, id, true);
     }
 
     static void refresh(Context c, int id, boolean force) {
@@ -93,7 +90,7 @@ public class CashPilotWidget extends AppWidgetProvider {
         long requestId = System.nanoTime();
         prefs.edit().putLong("request_" + id, requestId).apply();
 
-        boolean canFetch = force && !hasOverrides(c, id, month);
+        boolean canFetch = force;
         try {
             String cachedRaw = prefs.getString(sharedCacheKey(month), prefs.getString("cache_" + id + "_" + month, null));
             RemoteViews initialV = render(c, id, month, cachedRaw, cachedRaw != null, canFetch);

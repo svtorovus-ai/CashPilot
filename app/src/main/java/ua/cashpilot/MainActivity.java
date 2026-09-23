@@ -69,6 +69,7 @@ public class MainActivity extends Activity {
         firstResume = false;
         refreshHandler.removeCallbacks(autoRefresh);
         refreshHandler.postDelayed(autoRefresh, 10000L);
+        refreshHandler.postDelayed(() -> UpdateManager.checkAndPrompt(this, false), 1500L);
     }
 
     @Override protected void onPause() {
@@ -130,7 +131,6 @@ public class MainActivity extends Activity {
 
     private void refreshMonthInBackground() {
         final String selected = month();
-        if (hasManualOverrides(selected)) return;
         final long generation = loadGeneration;
         executor.submit(() -> {
             try {
@@ -141,7 +141,7 @@ public class MainActivity extends Activity {
                         .putString(CashPilotWidget.sharedCacheKey(selected), raw).apply();
                 runOnUiThread(() -> {
                     if (resumed && generation == loadGeneration && selected.equals(month())
-                            && !hasManualOverrides(selected)) {
+                            ) {
                         dashboard.setData(selected, raw, false, "Сервер");
                     }
                 });
