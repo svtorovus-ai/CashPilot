@@ -207,7 +207,12 @@ public class CashPilotWidget extends AppWidgetProvider {
 
     static RemoteViews render(Context c, int id, String month, String raw, boolean cached, boolean isUpdating) throws JSONException {
         RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_cashpilot);
+        SharedPreferences ratePrefs = c.getSharedPreferences(PREFS, 0);
+        AppTheme theme = AppTheme.fromPrefs(ratePrefs);
+
+        v.setInt(R.id.widget_root, "setBackgroundColor", theme.outerBgColor);
         v.setTextViewText(R.id.monthTitle, title(month));
+        v.setTextColor(R.id.monthTitle, theme.titleColor);
         bindButtons(c, v, id, month);
 
         JSONObject root = raw == null ? new JSONObject() : new JSONObject(raw);
@@ -243,7 +248,18 @@ public class CashPilotWidget extends AppWidgetProvider {
             String status = overrides.optString(date, d == null ? "idle" : d.optString("status", "idle"));
 
             v.setTextViewText(rid, String.valueOf(day));
-            v.setInt(rid, "setBackgroundResource", drawable(status));
+            int dayTextColor, dayBgColor;
+            if ("work".equals(status)) {
+                dayTextColor = theme.workTextColor; dayBgColor = theme.workGradTop;
+            } else if ("duty".equals(status)) {
+                dayTextColor = theme.dutyTextColor; dayBgColor = theme.dutyGradTop;
+            } else if ("vacation".equals(status)) {
+                dayTextColor = theme.vacationTextColor; dayBgColor = theme.vacationGradTop;
+            } else {
+                dayTextColor = theme.idleTextColor; dayBgColor = theme.idleGradTop;
+            }
+            v.setTextColor(rid, dayTextColor);
+            v.setInt(rid, "setBackgroundColor", dayBgColor);
 
             Intent click = new Intent(c, CashPilotWidget.class).setAction(TOGGLE)
                     .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id).putExtra("date", date);
@@ -256,19 +272,20 @@ public class CashPilotWidget extends AppWidgetProvider {
         }
 
         int dim = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
-        SharedPreferences ratePrefs = c.getSharedPreferences(PREFS, 0);
         double workRate = rate(ratePrefs, "rate_work", "rate_work_k", 100000);
         double dutyRate = rate(ratePrefs, "rate_duty", "rate_duty_k", 30000);
         boolean daily = ratePrefs.getBoolean("rate_mode_daily", false);
         double total = daily ? work * workRate + (duty + idle) * dutyRate : (work * workRate + (duty + idle) * dutyRate) / dim;
 
         v.setTextViewText(R.id.workCount, String.valueOf(work));
+        v.setTextColor(R.id.workCount, theme.workTextColor);
         v.setTextViewText(R.id.dutyCount, String.valueOf(duty));
+        v.setTextColor(R.id.dutyCount, theme.dutyTextColor);
         v.setTextViewText(R.id.vacationCount, String.valueOf(vac));
+        v.setTextColor(R.id.vacationCount, theme.vacationTextColor);
         v.setTextViewText(R.id.idleCount, String.valueOf(idle));
+        v.setTextColor(R.id.idleCount, theme.idleTextColor);
 
-        AppTheme theme = AppTheme.fromPrefs(ratePrefs);
-        v.setTextColor(R.id.monthTitle, theme.titleColor);
         v.setTextColor(R.id.totalPremium, theme.moneyColor);
         v.setTextColor(R.id.statusTitle, theme.subtitleColor);
         

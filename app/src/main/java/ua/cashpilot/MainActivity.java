@@ -272,6 +272,22 @@ public class MainActivity extends Activity {
         private float calendarTopPx, controlsTopPx;
         private boolean monthAnimating;
         private float calendarSlideOffset;
+        private Bitmap loadedBgBitmap;
+        private int loadedBgResId = -1;
+
+        private Bitmap getBgBitmap(int resId) {
+            if (resId == 0) return null;
+            if (resId == loadedBgResId && loadedBgBitmap != null && !loadedBgBitmap.isRecycled()) {
+                return loadedBgBitmap;
+            }
+            try {
+                loadedBgResId = resId;
+                loadedBgBitmap = BitmapFactory.decodeResource(getResources(), resId);
+                return loadedBgBitmap;
+            } catch (Exception e) {
+                return null;
+            }
+        }
 
         DashboardView(Context context) {
             super(context);
@@ -308,8 +324,8 @@ public class MainActivity extends Activity {
             canvas.drawRect(0, 0, width - d(1), height - d(1), paint);
             paint.setStyle(Paint.Style.FILL);
 
-            // Draw theme-specific watermark/vector silhouette
-            theme.drawWatermark(canvas, paint, path, width, height, density);
+            // Draw theme-specific watermark/vector silhouette/background
+            theme.drawWatermark(canvas, paint, path, width, height, density, getBgBitmap(theme.bgDrawableResId));
 
             float top = d(28), button = d(44), center = width / 2f;
             type(11, theme.subtitleColor, true); paint.setTextAlign(Paint.Align.CENTER);
@@ -387,23 +403,43 @@ public class MainActivity extends Activity {
         }
 
         private void drawStats(Canvas c, float x, float baseline, int work, int duty, int vacation, int idle, float size) {
-            String workText = "Працював " + work;
-            String dutyText = "Чергував " + duty;
-            drawPart(c, workText, x, baseline, size, 0xFF4DDB82); x += paint.measureText(workText);
-            drawPart(c, "  ·  ", x, baseline, size, 0xFFB7C3D0); x += paint.measureText("  ·  ");
-            drawPart(c, dutyText, x, baseline, size, 0xFFFFC928);
+            AppTheme theme = AppTheme.fromPrefs(prefs);
+            x = drawStatItem(c, "Працював ", work, x, baseline, size, theme.workTextColor, "work", theme);
+            x = drawPart(c, "  ·  ", x, baseline, size, theme.subtitleColor);
+            drawStatItem(c, "Чергував ", duty, x, baseline, size, theme.dutyTextColor, "duty", theme);
         }
 
         private void drawStatsSecond(Canvas c, float x, float baseline, int vacation, int idle, float size) {
-            String vacationText = "Відпустка " + vacation;
-            String idleText = "Без даних " + idle;
-            drawPart(c, vacationText, x, baseline, size, 0xFF3AA9FF); x += paint.measureText(vacationText);
-            drawPart(c, "  ·  ", x, baseline, size, 0xFFB7C3D0); x += paint.measureText("  ·  ");
-            drawPart(c, idleText, x, baseline, size, 0xFF9AA8B8);
+            AppTheme theme = AppTheme.fromPrefs(prefs);
+            x = drawStatItem(c, "Відпустка ", vacation, x, baseline, size, theme.vacationTextColor, "vacation", theme);
+            x = drawPart(c, "  ·  ", x, baseline, size, theme.subtitleColor);
+            drawStatItem(c, "Без даних ", idle, x, baseline, size, theme.idleTextColor, "idle", theme);
         }
 
-        private void drawPart(Canvas c, String text, float x, float baseline, float size, int color) {
+        private float drawStatItem(Canvas c, String label, int count, float x, float baseline, float size, int color, String state, AppTheme theme) {
+            type(size, color, true);
+            paint.setTextAlign(Paint.Align.LEFT);
+            c.drawText(label, x, baseline, paint);
+            x += paint.measureText(label);
+
+            if (!"idle".equals(state)) {
+                float iconRadius = d(size * 0.45f);
+                float iconX = x + iconRadius;
+                float iconY = baseline - d(size * 0.3f);
+                theme.drawDayIcon(c, paint, path, state, iconX, iconY, d(0.9f));
+                x += iconRadius * 2f + d(4);
+            }
+
+            type(size, color, true);
+            paint.setTextAlign(Paint.Align.LEFT);
+            String countText = String.valueOf(count);
+            c.drawText(countText, x, baseline, paint);
+            return x + paint.measureText(countText);
+        }
+
+        private float drawPart(Canvas c, String text, float x, float baseline, float size, int color) {
             type(size, color, true); paint.setTextAlign(Paint.Align.LEFT); c.drawText(text, x, baseline, paint);
+            return x + paint.measureText(text);
         }
 
         private float drawComparison(Canvas c, float x, float y, String selectedMonth, int work, int duty, int vacation, int idle, int days) {
