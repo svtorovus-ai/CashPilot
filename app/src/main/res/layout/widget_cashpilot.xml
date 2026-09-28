@@ -131,6 +131,7 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/workLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Працював"
@@ -155,6 +156,7 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/dutyLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Чергування"
@@ -179,6 +181,7 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/vacationLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Відпустка"
@@ -203,6 +206,7 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/idleLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Без даних"

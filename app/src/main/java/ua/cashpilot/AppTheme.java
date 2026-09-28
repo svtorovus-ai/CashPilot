@@ -7,7 +7,6 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.graphics.Shader;
 import java.util.Objects;
 
 public enum AppTheme {
@@ -25,8 +24,8 @@ public enum AppTheme {
             0xFF0B1F33, 0xFF0B1F33, 0xF018385C, 0xF00B1A2B, 0x8840C4FF,
             0xFF80D8FF, 0xFFE0F7FA, 0xFF00E5FF, 0xFF80D8FF,
             0x80104060, 0x50082030, 0xFF40C4FF,
-            0xE50B6E50, 0xF003291D, 0xFFB2FFD6, 0x9900FFCC, // work (UAV Airplane)
-            0xE58F6000, 0xF03B2600, 0xFFFFE57F, 0x99FFD54F, // duty (Flying Wing)
+            0xE50B6E50, 0xF003291D, 0xFFB2FFD6, 0x9900FFCC, // work (Лелека-100)
+            0xE58F6000, 0xF03B2600, 0xFFFFE57F, 0x99FFD54F, // duty (PD-2)
             0xE500579B, 0xF0002244, 0xFF80D8FF, 0x9940C4FF, // vacation (Palm Tree)
             0x9910283B, 0xF0081420, 0xFFB0BEC5, 0x6637474F, // idle
             0),
@@ -55,8 +54,8 @@ public enum AppTheme {
             0xFF000E06, 0xFF000E06, 0xF0001A0B, 0xF0000A04, 0x8800FF66,
             0xFF00FF66, 0xFFE0FFEC, 0xFF00FFCC, 0xFF69FF94,
             0x80003D18, 0x50001A0A, 0xFF00FF66,
-            0xE5006622, 0xF000260B, 0xFFB3FFCC, 0x9900FF66, // work (UAV Airplane)
-            0xE5856B00, 0xF0332900, 0xFFFFE066, 0x99FFD700, // duty (Quadcopter)
+            0xE5006622, 0xF000260B, 0xFFB3FFCC, 0x9900FF66, // work (Checkmark)
+            0xE5856B00, 0xF0332900, 0xFFFFE066, 0x99FFD700, // duty (Cross)
             0xE5005B85, 0xF0002133, 0xFF99ECFF, 0x9933CCFF, // vacation (Palm Tree)
             0x9900220F, 0xF0000F06, 0xFF99FFC6, 0x66006622, // idle
             R.drawable.theme_radar_bg);
@@ -141,10 +140,10 @@ public enum AppTheme {
 
         if (loadedBgBitmap != null && !loadedBgBitmap.isRecycled()) {
             if (this == HELLO_KITTY) {
-                // Tile Hello Kitty pattern nicely across canvas so kittens stay detailed and not zoomed in
+                // Scale Hello Kitty pattern larger so kittens are bigger and clearly visible
                 int bw = loadedBgBitmap.getWidth(), bh = loadedBgBitmap.getHeight();
                 if (bw > 0 && bh > 0) {
-                    float targetW = d * 220f;
+                    float targetW = width * 0.95f; // Bigger kittens
                     float scale = targetW / (float) bw;
                     int scaledW = Math.max(10, (int) (bw * scale));
                     int scaledH = Math.max(10, (int) (bh * scale));
@@ -155,38 +154,40 @@ public enum AppTheme {
                         }
                     }
                 }
-                // Dark translucent overlay to ensure text contrast
-                p.setColor(0x88260E1A);
+                // Soft translucent overlay
+                p.setColor(0x66260E1A);
                 c.drawRect(0, 0, width, height, p);
             } else if (this == PIXEL_CAMO) {
-                // Scale/tile pixel camo image across screen
+                // Tile/scale pixel camo image across screen
                 Rect src = new Rect(0, 0, loadedBgBitmap.getWidth(), loadedBgBitmap.getHeight());
                 RectF dst = new RectF(0, 0, width, height);
                 c.drawBitmap(loadedBgBitmap, src, dst, p);
-                p.setColor(0xAA101A10);
+                p.setColor(0x99101A10);
                 c.drawRect(0, 0, width, height, p);
             } else if (this == NEON_RADAR) {
-                // Scale radar background image to fill screen
+                // Draw Radar background image scaled to screen
                 Rect src = new Rect(0, 0, loadedBgBitmap.getWidth(), loadedBgBitmap.getHeight());
                 RectF dst = new RectF(0, 0, width, height);
                 c.drawBitmap(loadedBgBitmap, src, dst, p);
-                p.setColor(0x55000A04);
+                p.setColor(0x44000E06);
                 c.drawRect(0, 0, width, height, p);
             }
         } else if (this == UAV_DRONE) {
-            // Sky background with scattered small airplanes and quadcopter drones
+            // Sky background with scattered world UAV silhouettes
             p.setStyle(Paint.Style.STROKE);
             p.setStrokeWidth(d * 1.5f);
-            p.setColor(0x2200E5FF);
+            p.setColor(0x2800E5FF);
 
-            // Draw floating small UAV planes
-            drawUavAirplane(c, p, path, width * 0.2f, height * 0.25f, d * 18);
-            drawUavAirplane(c, p, path, width * 0.8f, height * 0.35f, d * 14);
-            drawUavAirplane(c, p, path, width * 0.3f, height * 0.75f, d * 22);
-
-            // Draw floating small Quadcopters
-            drawQuadcopter(c, p, path, width * 0.75f, height * 0.70f, d * 16);
-            drawQuadcopter(c, p, path, width * 0.18f, height * 0.52f, d * 14);
+            // Global Hawk / Reaper high-aspect wings
+            drawGlobalHawk(c, p, path, width * 0.5f, height * 0.28f, d * 35);
+            // X-47C stealth flying wing
+            drawStealthWing(c, p, path, width * 0.22f, height * 0.72f, d * 22);
+            // Predator / Reaper V-tail
+            drawUavPd2(c, p, path, width * 0.78f, height * 0.68f, d * 24);
+            // Leleka swept wing
+            drawLeleka(c, p, path, width * 0.18f, height * 0.38f, d * 20);
+            // Quadcopter
+            drawQuadcopter(c, p, path, width * 0.82f, height * 0.35f, d * 18);
         }
         p.setStyle(Paint.Style.FILL);
     }
@@ -198,7 +199,7 @@ public enum AppTheme {
         p.setStrokeWidth(d * 1.2f);
 
         if ("vacation".equals(state)) {
-            // ALL themes use a beautifully drawn Palm Tree for Vacation
+            // ALL themes use Palm Tree for Vacation
             p.setColor(vacationTextColor);
             drawPalmTree(c, p, path, cx, cy, d * 8f);
             return;
@@ -223,18 +224,18 @@ public enum AppTheme {
         } else if (this == NEON_RADAR) {
             if ("work".equals(state)) {
                 p.setColor(workTextColor);
-                drawUavAirplane(c, p, path, cx, cy, d * 7f);
+                drawCheckmark(c, p, path, cx, cy, d * 7f);
             } else if ("duty".equals(state)) {
                 p.setColor(dutyTextColor);
-                drawQuadcopter(c, p, path, cx, cy, d * 7f);
+                drawCross(c, p, path, cx, cy, d * 7f);
             }
         } else if (this == UAV_DRONE) {
             if ("work".equals(state)) {
                 p.setColor(workTextColor);
-                drawUavAirplane(c, p, path, cx, cy, d * 7.5f);
+                drawLeleka(c, p, path, cx, cy, d * 7.5f);
             } else if ("duty".equals(state)) {
                 p.setColor(dutyTextColor);
-                drawFlyingWing(c, p, path, cx, cy, d * 7.5f);
+                drawUavPd2(c, p, path, cx, cy, d * 7.5f);
             }
         } else {
             // DARK_CLASSIC
@@ -249,9 +250,8 @@ public enum AppTheme {
         p.setStyle(Paint.Style.FILL);
     }
 
-    // Vector Palm Tree (🌴) - Used for ALL themes on Vacation
+    // Vector Palm Tree (🌴)
     public static void drawPalmTree(Canvas c, Paint p, Path path, float cx, float cy, float s) {
-        // Trunk
         p.setStyle(Paint.Style.STROKE);
         p.setStrokeWidth(s * 0.22f);
         path.reset();
@@ -259,22 +259,14 @@ public enum AppTheme {
         path.quadTo(cx - s * 0.05f, cy + s * 0.2f, cx + s * 0.05f, cy - s * 0.1f);
         c.drawPath(path, p);
 
-        // 5 Arching Palm Fronds
         p.setStrokeWidth(s * 0.16f);
         float topX = cx + s * 0.05f, topY = cy - s * 0.1f;
-
-        // Frond 1 (Left-down)
         path.reset(); path.moveTo(topX, topY); path.quadTo(topX - s * 0.5f, topY - s * 0.2f, topX - s * 0.8f, topY + s * 0.2f); c.drawPath(path, p);
-        // Frond 2 (Left-up)
         path.reset(); path.moveTo(topX, topY); path.quadTo(topX - s * 0.4f, topY - s * 0.7f, topX - s * 0.7f, topY - s * 0.6f); c.drawPath(path, p);
-        // Frond 3 (Top-center)
         path.reset(); path.moveTo(topX, topY); path.quadTo(topX, topY - s * 0.8f, topX + s * 0.1f, topY - s * 0.9f); c.drawPath(path, p);
-        // Frond 4 (Right-up)
         path.reset(); path.moveTo(topX, topY); path.quadTo(topX + s * 0.4f, topY - s * 0.7f, topX + s * 0.7f, topY - s * 0.6f); c.drawPath(path, p);
-        // Frond 5 (Right-down)
         path.reset(); path.moveTo(topX, topY); path.quadTo(topX + s * 0.5f, topY - s * 0.2f, topX + s * 0.8f, topY + s * 0.2f); c.drawPath(path, p);
 
-        // Coconuts
         p.setStyle(Paint.Style.FILL);
         c.drawCircle(topX - s * 0.12f, topY + s * 0.05f, s * 0.12f, p);
         c.drawCircle(topX + s * 0.12f, topY + s * 0.05f, s * 0.12f, p);
@@ -290,89 +282,169 @@ public enum AppTheme {
         c.drawPath(path, p);
     }
 
-    // Vector Cloud (☁️)
+    // Fluffy Cloud (☁️)
     public static void drawCloud(Canvas c, Paint p, Path path, float cx, float cy, float s) {
+        p.setStyle(Paint.Style.FILL);
+        c.drawCircle(cx - s * 0.4f, cy + s * 0.05f, s * 0.38f, p);
+        c.drawCircle(cx - s * 0.18f, cy - s * 0.28f, s * 0.48f, p);
+        c.drawCircle(cx + s * 0.22f, cy - s * 0.2f, s * 0.42f, p);
+        c.drawCircle(cx + s * 0.48f, cy + s * 0.08f, s * 0.34f, p);
         path.reset();
-        float left = cx - s * 0.8f, right = cx + s * 0.8f, bottom = cy + s * 0.4f;
-        c.drawCircle(cx - s * 0.3f, cy - s * 0.1f, s * 0.45f, p);
-        c.drawCircle(cx + s * 0.15f, cy - s * 0.2f, s * 0.52f, p);
-        c.drawCircle(cx + s * 0.45f, cy, s * 0.38f, p);
-        c.drawCircle(cx - s * 0.45f, cy + s * 0.1f, s * 0.35f, p);
-        path.moveTo(left, bottom);
-        path.lineTo(right, bottom);
-        path.lineTo(right, cy);
-        path.lineTo(left, cy);
+        path.moveTo(cx - s * 0.7f, cy + s * 0.38f);
+        path.lineTo(cx + s * 0.7f, cy + s * 0.38f);
+        path.lineTo(cx + s * 0.7f, cy - s * 0.1f);
+        path.lineTo(cx - s * 0.7f, cy - s * 0.1f);
         path.close();
         c.drawPath(path, p);
     }
 
-    // Vector Hryvnia Symbol (₴)
+    // Hryvnia Symbol (₴)
     public static void drawHryvniaSymbol(Canvas c, Paint p, Path path, float cx, float cy, float s) {
         p.setStyle(Paint.Style.STROKE);
         p.setStrokeWidth(s * 0.22f);
         p.setStrokeCap(Paint.Cap.ROUND);
-        // 'S' Curve
         path.reset();
         path.moveTo(cx + s * 0.4f, cy - s * 0.5f);
         path.cubicTo(cx - s * 0.4f, cy - s * 0.6f, cx - s * 0.4f, cy, cx + s * 0.1f, cy);
         path.cubicTo(cx + s * 0.5f, cy, cx + s * 0.5f, cy + s * 0.6f, cx - s * 0.4f, cy + s * 0.5f);
         c.drawPath(path, p);
-        // Parallel horizontal bars
         c.drawLine(cx - s * 0.5f, cy - s * 0.2f, cx + s * 0.5f, cy - s * 0.2f, p);
         c.drawLine(cx - s * 0.5f, cy + s * 0.2f, cx + s * 0.5f, cy + s * 0.2f, p);
         p.setStyle(Paint.Style.FILL);
     }
 
-    // Vector Middle Finger (🖕)
+    // Realistic Middle Finger Gesture (🖕)
     public static void drawMiddleFinger(Canvas c, Paint p, Path path, float cx, float cy, float s) {
         p.setStyle(Paint.Style.FILL_AND_STROKE);
-        p.setStrokeWidth(s * 0.15f);
+        p.setStrokeWidth(s * 0.12f);
         path.reset();
         // Hand fist base
-        path.moveTo(cx - s * 0.5f, cy + s * 0.7f);
-        path.lineTo(cx + s * 0.5f, cy + s * 0.7f);
-        path.lineTo(cx + s * 0.5f, cy + s * 0.1f);
-        path.lineTo(cx + s * 0.18f, cy + s * 0.1f);
+        path.moveTo(cx - s * 0.55f, cy + s * 0.75f);
+        path.lineTo(cx + s * 0.55f, cy + s * 0.75f);
+        path.cubicTo(cx + s * 0.65f, cy + s * 0.2f, cx + s * 0.45f, cy + s * 0.1f, cx + s * 0.22f, cy + s * 0.1f);
         // Extended Middle Finger
-        path.lineTo(cx + s * 0.18f, cy - s * 0.8f);
-        path.cubicTo(cx + s * 0.18f, cy - s * 1.05f, cx - s * 0.18f, cy - s * 1.05f, cx - s * 0.18f, cy - s * 0.8f);
+        path.lineTo(cx + s * 0.18f, cy - s * 0.9f);
+        path.cubicTo(cx + s * 0.18f, cy - s * 1.15f, cx - s * 0.18f, cy - s * 1.15f, cx - s * 0.18f, cy - s * 0.9f);
         path.lineTo(cx - s * 0.18f, cy + s * 0.1f);
-        path.lineTo(cx - s * 0.5f, cy + s * 0.1f);
+        path.cubicTo(cx - s * 0.45f, cy + s * 0.1f, cx - s * 0.65f, cy + s * 0.2f, cx - s * 0.55f, cy + s * 0.75f);
+        path.close();
+        c.drawPath(path, p);
+
+        // Folded fingers details
+        p.setStyle(Paint.Style.STROKE);
+        p.setStrokeWidth(s * 0.1f);
+        c.drawLine(cx - s * 0.4f, cy + s * 0.22f, cx - s * 0.2f, cy + s * 0.22f, p); // Index
+        c.drawLine(cx + s * 0.2f, cy + s * 0.22f, cx + s * 0.4f, cy + s * 0.22f, p); // Ring
+        c.drawLine(cx + s * 0.2f, cy + s * 0.42f, cx + s * 0.38f, cy + s * 0.42f, p); // Pinky
+    }
+
+    // Checkmark (✔️ - Radar Work)
+    public static void drawCheckmark(Canvas c, Paint p, Path path, float cx, float cy, float s) {
+        p.setStyle(Paint.Style.STROKE);
+        p.setStrokeWidth(s * 0.28f);
+        p.setStrokeCap(Paint.Cap.ROUND);
+        p.setStrokeJoin(Paint.Join.ROUND);
+        path.reset();
+        path.moveTo(cx - s * 0.6f, cy);
+        path.lineTo(cx - s * 0.15f, cy + s * 0.5f);
+        path.lineTo(cx + s * 0.65f, cy - s * 0.5f);
+        c.drawPath(path, p);
+        p.setStyle(Paint.Style.FILL);
+    }
+
+    // Cross / X (❌ - Radar Duty)
+    public static void drawCross(Canvas c, Paint p, Path path, float cx, float cy, float s) {
+        p.setStyle(Paint.Style.STROKE);
+        p.setStrokeWidth(s * 0.28f);
+        p.setStrokeCap(Paint.Cap.ROUND);
+        c.drawLine(cx - s * 0.5f, cy - s * 0.5f, cx + s * 0.5f, cy + s * 0.5f, p);
+        c.drawLine(cx - s * 0.5f, cy + s * 0.5f, cx + s * 0.5f, cy - s * 0.5f, p);
+        p.setStyle(Paint.Style.FILL);
+    }
+
+    // Лелека-100 (UAV Work)
+    public static void drawLeleka(Canvas c, Paint p, Path path, float cx, float cy, float s) {
+        p.setStyle(Paint.Style.FILL_AND_STROKE);
+        p.setStrokeWidth(s * 0.1f);
+        path.reset();
+        path.moveTo(cx, cy - s * 0.7f); // Nose
+        path.cubicTo(cx + s * 0.3f, cy - s * 0.2f, cx + s * 1.1f, cy + s * 0.3f, cx + s * 1.0f, cy + s * 0.5f); // Right wing
+        path.lineTo(cx + s * 0.2f, cy + s * 0.3f);
+        path.lineTo(cx + s * 0.25f, cy + s * 0.8f); // Tail
+        path.lineTo(cx, cy + s * 0.7f);
+        path.lineTo(cx - s * 0.25f, cy + s * 0.8f);
+        path.lineTo(cx - s * 0.2f, cy + s * 0.3f);
+        path.cubicTo(cx - s * 1.1f, cy + s * 0.3f, cx - s * 0.3f, cy - s * 0.2f, cx, cy - s * 0.7f); // Left wing
         path.close();
         c.drawPath(path, p);
     }
 
-    // Vector UAV Airplane (🛩️)
-    public static void drawUavAirplane(Canvas c, Paint p, Path path, float cx, float cy, float s) {
+    // PD-2 (UAV Duty)
+    public static void drawUavPd2(Canvas c, Paint p, Path path, float cx, float cy, float s) {
         p.setStyle(Paint.Style.FILL_AND_STROKE);
         p.setStrokeWidth(s * 0.1f);
         path.reset();
-        path.moveTo(cx, cy - s * 0.9f); // Nose
+        path.moveTo(cx, cy - s * 0.8f); // Nose
         path.lineTo(cx + s * 0.2f, cy - s * 0.3f);
-        path.lineTo(cx + s * 1.2f, cy - s * 0.1f); // Right wing tip
-        path.lineTo(cx + s * 1.1f, cy + s * 0.2f);
-        path.lineTo(cx + s * 0.2f, cy + s * 0.2f);
-        path.lineTo(cx + s * 0.3f, cy + s * 0.8f); // Right tail
-        path.lineTo(cx, cy + s * 0.7f);
-        path.lineTo(cx - s * 0.3f, cy + s * 0.8f); // Left tail
-        path.lineTo(cx - s * 0.2f, cy + s * 0.2f);
-        path.lineTo(cx - s * 1.1f, cy + s * 0.2f);
-        path.lineTo(cx - s * 1.2f, cy - s * 0.1f); // Left wing tip
+        path.lineTo(cx + s * 1.2f, cy - s * 0.15f); // Right wing
+        path.lineTo(cx + s * 1.2f, cy - s * 0.3f); // Winglet
+        path.lineTo(cx + s * 1.0f, cy + s * 0.1f);
+        path.lineTo(cx + s * 0.2f, cy + s * 0.1f);
+        path.lineTo(cx + s * 0.3f, cy + s * 0.8f); // Right boom tail
+        path.lineTo(cx, cy + s * 0.65f); // Inverted V-tail
+        path.lineTo(cx - s * 0.3f, cy + s * 0.8f); // Left boom tail
+        path.lineTo(cx - s * 0.2f, cy + s * 0.1f);
+        path.lineTo(cx - s * 1.0f, cy + s * 0.1f);
+        path.lineTo(cx - s * 1.2f, cy - s * 0.3f); // Winglet
+        path.lineTo(cx - s * 1.2f, cy - s * 0.15f); // Left wing
         path.lineTo(cx - s * 0.2f, cy - s * 0.3f);
         path.close();
         c.drawPath(path, p);
     }
 
-    // Vector Quadcopter Drone (🚁)
+    // Global Hawk
+    public static void drawGlobalHawk(Canvas c, Paint p, Path path, float cx, float cy, float s) {
+        p.setStyle(Paint.Style.FILL_AND_STROKE);
+        p.setStrokeWidth(s * 0.08f);
+        path.reset();
+        path.moveTo(cx, cy - s * 0.9f);
+        path.lineTo(cx + s * 0.15f, cy - s * 0.1f);
+        path.lineTo(cx + s * 1.6f, cy - s * 0.05f); // Ultra long wing
+        path.lineTo(cx + s * 1.6f, cy + s * 0.05f);
+        path.lineTo(cx + s * 0.15f, cy + s * 0.1f);
+        path.lineTo(cx + s * 0.15f, cy + s * 0.8f);
+        path.lineTo(cx, cy + s * 0.9f);
+        path.lineTo(cx - s * 0.15f, cy + s * 0.8f);
+        path.lineTo(cx - s * 0.15f, cy + s * 0.1f);
+        path.lineTo(cx - s * 1.6f, cy + s * 0.05f);
+        path.lineTo(cx - s * 1.6f, cy - s * 0.05f);
+        path.lineTo(cx - s * 0.15f, cy - s * 0.1f);
+        path.close();
+        c.drawPath(path, p);
+    }
+
+    // Stealth Wing (X-47C)
+    public static void drawStealthWing(Canvas c, Paint p, Path path, float cx, float cy, float s) {
+        p.setStyle(Paint.Style.FILL_AND_STROKE);
+        p.setStrokeWidth(s * 0.08f);
+        path.reset();
+        path.moveTo(cx, cy - s * 0.8f);
+        path.lineTo(cx + s * 1.1f, cy + s * 0.2f);
+        path.lineTo(cx + s * 0.8f, cy + s * 0.6f);
+        path.lineTo(cx, cy + s * 0.2f);
+        path.lineTo(cx - s * 0.8f, cy + s * 0.6f);
+        path.lineTo(cx - s * 1.1f, cy + s * 0.2f);
+        path.close();
+        c.drawPath(path, p);
+    }
+
+    // Quadcopter
     public static void drawQuadcopter(Canvas c, Paint p, Path path, float cx, float cy, float s) {
         p.setStyle(Paint.Style.STROKE);
         p.setStrokeWidth(s * 0.18f);
-        // Central body
         c.drawCircle(cx, cy, s * 0.25f, p);
-        // 4 diagonal arms
         c.drawLine(cx - s * 0.6f, cy - s * 0.6f, cx + s * 0.6f, cy + s * 0.6f, p);
         c.drawLine(cx - s * 0.6f, cy + s * 0.6f, cx + s * 0.6f, cy - s * 0.6f, p);
-        // 4 motor rotor circles
         c.drawCircle(cx - s * 0.6f, cy - s * 0.6f, s * 0.28f, p);
         c.drawCircle(cx + s * 0.6f, cy - s * 0.6f, s * 0.28f, p);
         c.drawCircle(cx - s * 0.6f, cy + s * 0.6f, s * 0.28f, p);
@@ -380,22 +452,7 @@ public enum AppTheme {
         p.setStyle(Paint.Style.FILL);
     }
 
-    // Vector Flying Wing (✈️)
-    public static void drawFlyingWing(Canvas c, Paint p, Path path, float cx, float cy, float s) {
-        p.setStyle(Paint.Style.FILL_AND_STROKE);
-        p.setStrokeWidth(s * 0.12f);
-        path.reset();
-        path.moveTo(cx, cy - s * 0.8f);
-        path.lineTo(cx + s * 1.1f, cy + s * 0.5f);
-        path.lineTo(cx + s * 0.8f, cy + s * 0.7f);
-        path.lineTo(cx, cy + s * 0.3f);
-        path.lineTo(cx - s * 0.8f, cy + s * 0.7f);
-        path.lineTo(cx - s * 1.1f, cy + s * 0.5f);
-        path.close();
-        c.drawPath(path, p);
-    }
-
-    // Vector Star (⭐)
+    // Star
     public static void drawStar(Canvas c, Paint p, Path path, float cx, float cy, float r) {
         path.reset();
         float inner = r * 0.45f;

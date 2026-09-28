@@ -279,12 +279,16 @@ public class CashPilotWidget extends AppWidgetProvider {
 
         v.setTextViewText(R.id.workCount, String.valueOf(work));
         v.setTextColor(R.id.workCount, theme.workTextColor);
+        v.setTextColor(R.id.workLabel, theme.workTextColor);
         v.setTextViewText(R.id.dutyCount, String.valueOf(duty));
         v.setTextColor(R.id.dutyCount, theme.dutyTextColor);
+        v.setTextColor(R.id.dutyLabel, theme.dutyTextColor);
         v.setTextViewText(R.id.vacationCount, String.valueOf(vac));
         v.setTextColor(R.id.vacationCount, theme.vacationTextColor);
+        v.setTextColor(R.id.vacationLabel, theme.vacationTextColor);
         v.setTextViewText(R.id.idleCount, String.valueOf(idle));
         v.setTextColor(R.id.idleCount, theme.idleTextColor);
+        v.setTextColor(R.id.idleLabel, theme.idleTextColor);
 
         v.setTextColor(R.id.totalPremium, theme.moneyColor);
         v.setTextColor(R.id.statusTitle, theme.subtitleColor);
