@@ -37,22 +37,56 @@ public class SettingsActivity extends Activity {
         rateButtons.addView(military, new LinearLayout.LayoutParams(0, -2, 1)); root.addView(rateButtons);
 
         TextView themeTitle = new TextView(this); themeTitle.setText("Тема оформлення"); themeTitle.setTextColor(Color.parseColor("#B8D7FF")); themeTitle.setTypeface(null, Typeface.BOLD); themeTitle.setPadding(4, 28, 0, 8); themeTitle.setTextSize(14); root.addView(themeTitle);
-        RadioGroup themeGroup = new RadioGroup(this); themeGroup.setOrientation(RadioGroup.VERTICAL);
+
         AppTheme[] themes = AppTheme.values();
-        RadioButton[] themeButtons = new RadioButton[themes.length];
+        String[] themeTitles = new String[themes.length];
+        for (int i = 0; i < themes.length; i++) {
+            themeTitles[i] = themes[i].title;
+        }
+
+        Spinner themeSpinner = new Spinner(this);
+        themeSpinner.setBackgroundResource(R.drawable.settings_field_bg);
+        themeSpinner.setPadding(dp(12), dp(12), dp(12), dp(12));
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, themeTitles) {
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                View v = super.getView(position, convertView, parent);
+                if (v instanceof TextView) {
+                    TextView tv = (TextView) v;
+                    tv.setTextColor(Color.WHITE);
+                    tv.setTextSize(15);
+                    tv.setPadding(dp(8), dp(4), dp(8), dp(4));
+                }
+                return v;
+            }
+            @Override
+            public View getDropDownView(int position, View convertView, ViewGroup parent) {
+                View v = super.getDropDownView(position, convertView, parent);
+                v.setBackgroundColor(Color.parseColor("#121C26"));
+                if (v instanceof TextView) {
+                    TextView tv = (TextView) v;
+                    tv.setTextColor(Color.WHITE);
+                    tv.setTextSize(15);
+                    tv.setPadding(dp(16), dp(16), dp(16), dp(16));
+                }
+                return v;
+            }
+        };
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        themeSpinner.setAdapter(adapter);
+
         SharedPreferences pInitial = getSharedPreferences(CashPilotWidget.PREFS, 0);
         AppTheme currentTheme = AppTheme.fromPrefs(pInitial);
+        int initialIndex = 0;
         for (int i = 0; i < themes.length; i++) {
-            RadioButton rb = new RadioButton(this);
-            rb.setText(themes[i].title);
-            rb.setTextColor(Color.WHITE);
-            rb.setTextSize(14);
-            rb.setPadding(dp(8), dp(6), dp(8), dp(6));
-            if (themes[i] == currentTheme) rb.setChecked(true);
-            themeGroup.addView(rb);
-            themeButtons[i] = rb;
+            if (themes[i] == currentTheme) {
+                initialIndex = i;
+                break;
+            }
         }
-        root.addView(themeGroup);
+        themeSpinner.setSelection(initialIndex);
+        root.addView(themeSpinner);
 
         Button save=new Button(this); save.setText("Зберегти"); save.setTextColor(Color.WHITE); save.setBackgroundResource(R.drawable.settings_button_bg);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(-1, -2); lp.setMargins(0, 48, 0, 0); save.setLayoutParams(lp); root.addView(save);
@@ -64,14 +98,10 @@ public class SettingsActivity extends Activity {
         military.setOnClickListener(v -> { workRate.setText("100000"); dutyRate.setText("30000"); });
         save.setOnClickListener(v->{
             int work = parseRate(workRate.getText().toString(), 100000), duty = parseRate(dutyRate.getText().toString(), 30000);
-            AppTheme selectedTheme = AppTheme.DARK_CLASSIC;
-            for (int i = 0; i < themes.length; i++) {
-                if (themeButtons[i].isChecked()) {
-                    selectedTheme = themes[i];
-                    break;
-                }
+            int pos = themeSpinner.getSelectedItemPosition();
+            if (pos >= 0 && pos < themes.length) {
+                AppTheme.saveToPrefs(p, themes[pos]);
             }
-            AppTheme.saveToPrefs(p, selectedTheme);
             p.edit().putString("url",url.getText().toString().trim()).putString("token",token.getText().toString().trim()).putString("install",install.getText().toString().trim()).putString("stats_url",statsUrl.getText().toString().trim()).putInt("rate_work", work).putInt("rate_duty", duty).putBoolean("rate_mode_daily", daily.isChecked()).apply(); updateWidgets(); Toast.makeText(this,"Збережено",Toast.LENGTH_SHORT).show();
         });
         Button update = new Button(this); update.setText("Перевірити оновлення CashPilot"); update.setTextColor(Color.WHITE); update.setBackgroundResource(R.drawable.settings_button_bg);
