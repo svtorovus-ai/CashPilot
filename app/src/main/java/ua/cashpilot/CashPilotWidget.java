@@ -266,6 +266,11 @@ public class CashPilotWidget extends AppWidgetProvider {
         v.setTextViewText(R.id.dutyCount, String.valueOf(duty));
         v.setTextViewText(R.id.vacationCount, String.valueOf(vac));
         v.setTextViewText(R.id.idleCount, String.valueOf(idle));
+
+        AppTheme theme = AppTheme.fromPrefs(ratePrefs);
+        v.setTextColor(R.id.monthTitle, theme.titleColor);
+        v.setTextColor(R.id.totalPremium, theme.moneyColor);
+        v.setTextColor(R.id.statusTitle, theme.subtitleColor);
         
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(new Locale("uk", "UA"));
         symbols.setGroupingSeparator(' ');

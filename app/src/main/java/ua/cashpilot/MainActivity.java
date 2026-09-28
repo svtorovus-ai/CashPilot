@@ -65,6 +65,9 @@ public class MainActivity extends Activity {
     @Override protected void onResume() {
         super.onResume();
         resumed = true;
+        AppTheme currentTheme = AppTheme.fromPrefs(prefs);
+        getWindow().setStatusBarColor(currentTheme.statusNavBgColor);
+        getWindow().setNavigationBarColor(currentTheme.statusNavBgColor);
         if (firstResume || dashboard != null) loadMonth(month());
         firstResume = false;
         refreshHandler.removeCallbacks(autoRefresh);
@@ -294,24 +297,29 @@ public class MainActivity extends Activity {
             super.onDraw(canvas);
             if (selected == null) selected = month();
             int width = getWidth(), height = getHeight();
-            color(Color.rgb(3, 5, 9)); canvas.drawRect(0, 0, width, height, paint);
+            AppTheme theme = AppTheme.fromPrefs(prefs);
+
+            color(theme.outerBgColor); canvas.drawRect(0, 0, width, height, paint);
             float pad = d(18), right = width - pad;
-            paint.setShader(new LinearGradient(0, 0, 0, height, 0xE51D2532, 0xF003060B, Shader.TileMode.CLAMP));
+            paint.setShader(new LinearGradient(0, 0, 0, height, theme.bgGradientTop, theme.bgGradientBottom, Shader.TileMode.CLAMP));
             canvas.drawRect(0, 0, width, height, paint);
             paint.setShader(null);
-            paint.setStyle(Paint.Style.STROKE); paint.setStrokeWidth(d(1)); paint.setColor(0x667A8795);
+            paint.setStyle(Paint.Style.STROKE); paint.setStrokeWidth(d(1)); paint.setColor(theme.bgBorderColor);
             canvas.drawRect(0, 0, width - d(1), height - d(1), paint);
             paint.setStyle(Paint.Style.FILL);
 
+            // Draw theme-specific watermark/vector silhouette
+            theme.drawWatermark(canvas, paint, path, width, height, density);
+
             float top = d(28), button = d(44), center = width / 2f;
-            type(11, 0xFF9FADBD, true); paint.setTextAlign(Paint.Align.CENTER);
+            type(11, theme.subtitleColor, true); paint.setTextAlign(Paint.Align.CENTER);
             canvas.drawText("Шо там по бабкам¿", center, top + d(8), paint);
-            type(19, 0xFFF2F6FB, true); paint.setTextAlign(Paint.Align.CENTER);
+            type(19, theme.titleColor, true); paint.setTextAlign(Paint.Align.CENTER);
             canvas.drawText(title(selected == null ? month() : selected), center, top + d(31), paint);
 
             float y = top + button + d(16);
             String rateUnit = prefs.getBoolean("rate_mode_daily", false) ? "/день" : "/міс";
-            type(12, 0xFF9FADBD, true); canvas.drawText("Працював " + rateLabel(CashPilotWidget.rate(prefs, "rate_work", "rate_work_k", 100000)) + rateUnit + " · Чергував " + rateLabel(CashPilotWidget.rate(prefs, "rate_duty", "rate_duty_k", 30000)) + rateUnit + " · Відпустка 0", pad, y, paint);
+            type(12, theme.subtitleColor, true); canvas.drawText("Працював " + rateLabel(CashPilotWidget.rate(prefs, "rate_work", "rate_work_k", 100000)) + rateUnit + " · Чергував " + rateLabel(CashPilotWidget.rate(prefs, "rate_duty", "rate_duty_k", 30000)) + rateUnit + " · Відпустка 0", pad, y, paint);
             y += d(31);
             firstDay = firstDayOfMonth(selected);
             daysInMonth = daysInSelectedMonth(selected);
@@ -325,8 +333,8 @@ public class MainActivity extends Activity {
             }
             boolean compact = width < d(500);
             if (compact) {
-                type(10, 0xFF93A4B6, false); paint.setTextAlign(Paint.Align.LEFT); canvas.drawText("Премія", pad, y, paint);
-                type(22, 0xFFB8E7FF, true); paint.setTextAlign(Paint.Align.RIGHT);
+                type(10, theme.subtitleColor, false); paint.setTextAlign(Paint.Align.LEFT); canvas.drawText("Премія", pad, y, paint);
+                type(22, theme.moneyColor, true); paint.setTextAlign(Paint.Align.RIGHT);
                 canvas.drawText(money(work, duty, vacation, idle, daysInMonth), right, y, paint);
                 y += d(31);
                 drawStats(canvas, pad, y, work, duty, vacation, idle, 12);
@@ -336,19 +344,19 @@ public class MainActivity extends Activity {
             } else {
                 drawStats(canvas, pad, y, work, duty, vacation, idle, 14);
                 drawStatsSecond(canvas, pad, y + d(20), vacation, idle, 14);
-                type(25, 0xFFB8E7FF, true); paint.setTextAlign(Paint.Align.RIGHT);
+                type(25, theme.moneyColor, true); paint.setTextAlign(Paint.Align.RIGHT);
                 canvas.drawText(money(work, duty, vacation, idle, daysInMonth), right, y + d(11), paint);
                 y += d(32);
                 y = drawComparison(canvas, pad, y, selected, work, duty, vacation, idle, daysInMonth);
             }
-            paint.setColor(0x304C5764); canvas.drawRect(pad, y, right, y + d(1), paint); y += d(21);
+            paint.setColor(theme.bgBorderColor); canvas.drawRect(pad, y, right, y + d(1), paint); y += d(21);
             String[] weekdays = {"Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд"};
             float cellW = (right - pad) / 7f;
             float controlsTop = height - d(66);
             canvas.save();
             canvas.clipRect(0, y - d(16), width, controlsTop);
             canvas.translate(calendarSlideOffset, 0);
-            type(11, 0xFF9BA9BA, false); paint.setTextAlign(Paint.Align.CENTER);
+            type(11, theme.weekdaysColor, false); paint.setTextAlign(Paint.Align.CENTER);
             for (int i = 0; i < 7; i++) canvas.drawText(weekdays[i], pad + cellW * (i + .5f), y, paint);
             y += d(13);
             float gridH = controlsTop - y - d(12), rowH = Math.min(gridH / 6f, cellW * 0.98f);
@@ -473,19 +481,34 @@ public class MainActivity extends Activity {
         }
 
         private void drawDay(Canvas c, float l, float t, float r, float b, String state, int day) {
-            int top, bottom, text;
-            if ("work".equals(state)) { top = 0xE51B7652; bottom = 0xF005241C; text = 0xFFB7F5D8; }
-            else if ("duty".equals(state)) { top = 0xE58A6508; bottom = 0xF0332204; text = 0xFFFFE6A0; }
-            else if ("vacation".equals(state)) { top = 0xE5225C9B; bottom = 0xF00B2344; text = 0xFFB9DEFF; }
-            else { top = 0xA5161C25; bottom = 0xF003060A; text = 0xFFC5CED8; }
+            AppTheme theme = AppTheme.fromPrefs(prefs);
+            int top, bottom, text, stroke;
+            if ("work".equals(state)) {
+                top = theme.workGradTop; bottom = theme.workGradBottom; text = theme.workTextColor; stroke = theme.workBorderColor;
+            } else if ("duty".equals(state)) {
+                top = theme.dutyGradTop; bottom = theme.dutyGradBottom; text = theme.dutyTextColor; stroke = theme.dutyBorderColor;
+            } else if ("vacation".equals(state)) {
+                top = theme.vacationGradTop; bottom = theme.vacationGradBottom; text = theme.vacationTextColor; stroke = theme.vacationBorderColor;
+            } else {
+                top = theme.idleGradTop; bottom = theme.idleGradBottom; text = theme.idleTextColor; stroke = theme.idleBorderColor;
+            }
             paint.setShader(new LinearGradient(0, t, 0, b, top, bottom, Shader.TileMode.CLAMP)); c.drawRoundRect(l, t, r, b, d(8), d(8), paint); paint.setShader(null);
-            paint.setStyle(Paint.Style.STROKE); paint.setStrokeWidth(d(1)); paint.setColor(0x666F879B); c.drawRoundRect(l, t, r, b, d(8), d(8), paint); paint.setStyle(Paint.Style.FILL);
-            type(15, text, true); paint.setTextAlign(Paint.Align.CENTER); c.drawText(String.valueOf(day), (l + r) / 2, (t + b) / 2 - (paint.ascent() + paint.descent()) / 2, paint);
+            paint.setStyle(Paint.Style.STROKE); paint.setStrokeWidth(d(1)); paint.setColor(stroke); c.drawRoundRect(l, t, r, b, d(8), d(8), paint); paint.setStyle(Paint.Style.FILL);
+
+            float cx = (l + r) / 2f, cy = (t + b) / 2f;
+            type(14, text, true); paint.setTextAlign(Paint.Align.CENTER);
+            if (!"idle".equals(state) && theme != AppTheme.DARK_CLASSIC) {
+                c.drawText(String.valueOf(day), cx, cy - d(4) - (paint.ascent() + paint.descent()) / 2, paint);
+                theme.drawDayIcon(c, paint, path, state, cx, cy + d(8), d(1.0f));
+            } else {
+                c.drawText(String.valueOf(day), cx, cy - (paint.ascent() + paint.descent()) / 2, paint);
+            }
         }
 
         private void drawButton(Canvas c, float x, float y, float size, int icon) {
-            paint.setShader(new LinearGradient(0, y, 0, y + size, 0x704C5866, 0x40202730, Shader.TileMode.CLAMP)); c.drawRoundRect(x, y, x + size, y + size, d(12), d(12), paint); paint.setShader(null);
-            paint.setStyle(Paint.Style.STROKE); paint.setStrokeWidth(d(3)); paint.setStrokeCap(Paint.Cap.ROUND); paint.setStrokeJoin(Paint.Join.ROUND); paint.setColor(0xFFD6E3EE);
+            AppTheme theme = AppTheme.fromPrefs(prefs);
+            paint.setShader(new LinearGradient(0, y, 0, y + size, theme.btnGradTop, theme.btnGradBottom, Shader.TileMode.CLAMP)); c.drawRoundRect(x, y, x + size, y + size, d(12), d(12), paint); paint.setShader(null);
+            paint.setStyle(Paint.Style.STROKE); paint.setStrokeWidth(d(3)); paint.setStrokeCap(Paint.Cap.ROUND); paint.setStrokeJoin(Paint.Join.ROUND); paint.setColor(theme.btnStrokeColor);
             float cx = x + size / 2, cy = y + size / 2;
             if (icon == 0) { for (int i = -1; i <= 1; i++) { c.drawLine(cx + d(i * 10), y + d(10), cx + d(i * 10), y + d(32), paint); c.drawCircle(cx + d(i * 10), y + d(i == 0 ? 18 : 25), d(3), paint); } }
             else if (icon == 1) { path.reset(); path.moveTo(x + d(25), y + d(11)); path.lineTo(x + d(14), cy); path.lineTo(x + d(25), y + d(31)); c.drawPath(path, paint); }
