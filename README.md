@@ -1,5 +1,9 @@
 # CashPilot
 
+> [!IMPORTANT]
+> **Перед змінами:** прочитай [00_READ_FIRST.md](00_READ_FIRST.md), [AGENTS.md](AGENTS.md) і [docs/PROJECT_GUIDE.md](docs/PROJECT_GUIDE.md).  
+> Server telemetry є read-only; ручні day overrides залишаються локальними.
+
 Android app and home-screen widget for reading PITUSHNYA MCC telemetry statistics.
 
 ## Statistics and cache rules
